@@ -87,7 +87,7 @@ plt.title('vs. Sale Price')
 plt.show()
 o_qual.savefig('plots/overall_qual.png')
 gr_area.savefig('plots/above_ground.png')
-gar_n.savefig('plots/garace_cars.png')
+gar_n.savefig('plots/garage_cars.png')
 #%%
 ''' This is a popular dataset so some of the feature engineering and 
 exploratory analysis are either verbatim or inspired by notebooks Ive browsed
@@ -102,7 +102,7 @@ outliers is very common across the board. They are:
 Since these dont make sense generally, we will remove these outliers here.  We
 will also maintain this criteria when processing new/test data.
 '''
-## Overall Quality outliers
+## Overall quality outliers
 train = train.drop(train[(train['SalePrice'] < 200000)
                          & (train['OverallQual'] >= 9)].index)
 ## Above ground living area outliers
@@ -130,13 +130,49 @@ plt.title('vs. Sale Price')
 plt.show()
 o_qual.savefig('plots/overall_qual.png')
 gr_area.savefig('plots/above_ground.png')
-gar_n.savefig('plots/garace_cars.png')
+gar_n.savefig('plots/garage_cars.png')
 #%%
 '''
-Much better.  Moving on, as suspected, the variables most correlated with sale
-prince are those that deal with quality and physical area.
+Since we found outliers in features dealing with the garage and above
+ground space, and since there are related features in the top ten 
+correlations, lets inspect those as well.
 '''
-## Get the list of numeric and categorical columns\n",
+## Above ground rooms
+gr_rms = sns.boxplot(y='SalePrice', x='TotRmsAbvGrd', data=train)
+plt.suptitle('Above ground rooms\n vs.SalePrice')
+plt.show()
+## Cars per Garage
+gar_a = sns.jointplot(x='GarageArea',y='SalePrice', data=train)
+plt.suptitle('Garage area\n vs. Sale Price')
+gar_a.fig.tight_layout()
+gar_a.fig.subplots_adjust(top=0.9)
+plt.show()
+gr_rms.savefig('plots/above_ground_rooms.png')
+gar_a.savefig('plots/garage_area.png')
+#%%
+'''
+Here we see that there is an outlier in the Total Rooms Above Ground (=14) and
+when the garage area exceeds 1200 feet, we have a few that sold less than
+300000.  We can remove these and add to our outlier criteria for new data.
+We also see that the variance in sale price is high when we reach the higher
+number of rooms above ground.  We can engineer a feature to represent the
+sweet spot of rooms above ground as a new variable for modeling.
+'''
+## Large garage outliers
+train = train.drop(train[(train['SalePrice'] < 300000)
+                         & (train['GarageArea'] >= 1200)].index)
+## Many rooms above ground outliers
+train = train.drop(train[(train['SalePrice'] < 300000)
+                         & (train['TotRmsAbvGrd'] > 12)].index)
+## Binary variable if TotRmsAbvGrd in between 9 & 11
+train['sweet_abvgrdrms'] = (train['TotRmsAbvGrd']>=9) & (train['TotRmsAbvGrd'] <= 11)
+train['sweet_abvgrdrms'] = train['sweet_abvgrdrms'].astype(int)
+#%%
+'''
+Moving on, as suspected, the variables most correlated with sale price are
+those that deal with quality and physical area.
+'''
+## Get the list of numeric and categorical columns
 df = df_train
 binary_columns = [col for col in df.columns if df[col].nunique() == 2]
 print("Binary Columns : ", binary_columns)
