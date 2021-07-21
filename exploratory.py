@@ -48,11 +48,18 @@ sns.displot(target, kde=True)
 plt.title('Target Distribution')
 plt.show()
 #%%
+##Target is not normally distributed, lets try taking the log
+sns.displot(np.log1p(target), color='g', kde=True)
+plt.title('Log(Target+1)')
+plt.show()
+#%%
 '''
 From the plots and information above, we can see that there are quite a lot
 variables and that the target is correlated most with features relating to 
 area and quality.  Also interesting is that the variables associated with
 luxury features, such as a fireplace and wood deck, are highly correlated.
+We also know to engineer the target variable such that it is normally
+distributed.
 '''
 ##Correlations just with SalePrice
 print(train.corr()['SalePrice'].sort_values(ascending=False))
@@ -73,3 +80,8 @@ numerical_columns = [col for col in df.columns if col not in categorical_columns
 print("Numerical Columns : ", numerical_columns)
 #%%
 ## Get distributions of categorical variables
+print('Category    Uniques')
+print('-------------------')
+for cat in categorical_columns:
+    n = str(len(df[cat].unique()))
+    print(f'{cat:16}{n:1}')
