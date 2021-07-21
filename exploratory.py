@@ -85,9 +85,9 @@ gar_n = sns.boxplot(x='GarageCars',y='SalePrice', data=train)
 plt.suptitle('Cars per Garage')
 plt.title('vs. Sale Price')
 plt.show()
-o_qual.savefig('plots/overall_qual.png')
-gr_area.savefig('plots/above_ground.png')
-gar_n.savefig('plots/garage_cars.png')
+o_qual.figure.savefig('plots/overall_qual.png')
+gr_area.fig.savefig('plots/above_ground.png')
+gar_n.figure.savefig('plots/garage_cars.png')
 #%%
 ''' This is a popular dataset so some of the feature engineering and 
 exploratory analysis are either verbatim or inspired by notebooks Ive browsed
@@ -96,9 +96,9 @@ using strategies others have used, but may not link a source as some of these
 methods are very common when training a model using this data set.
 For example, the plots above show that we have some outliers.  Removing these
 outliers is very common across the board. They are:
-    * A property with quality = 10 but very low sale price
-    * Properties with large living areas but very low sale price
-    * Homes with 4 car garages sell lower than those with 3 car garages
+    * A sale with quality = 10 but very low sale price
+    * Sales with large living areas but very low sale price
+    * Sales with 4 car garages sell lower than those with 3 car garages
 Since these dont make sense generally, we will remove these outliers here.  We
 will also maintain this criteria when processing new/test data.
 '''
@@ -128,9 +128,9 @@ gar_n = sns.boxplot(x='GarageCars',y='SalePrice', data=train)
 plt.suptitle('Cars per Garage')
 plt.title('vs. Sale Price')
 plt.show()
-o_qual.savefig('plots/overall_qual.png')
-gr_area.savefig('plots/above_ground.png')
-gar_n.savefig('plots/garage_cars.png')
+o_qual.figure.savefig('plots/overall_qual.png')
+gr_area.fig.savefig('plots/above_ground.png')
+gar_n.figure.savefig('plots/garage_cars.png')
 #%%
 '''
 Since we found outliers in features dealing with the garage and above
@@ -147,8 +147,8 @@ plt.suptitle('Garage area\n vs. Sale Price')
 gar_a.fig.tight_layout()
 gar_a.fig.subplots_adjust(top=0.9)
 plt.show()
-gr_rms.savefig('plots/above_ground_rooms.png')
-gar_a.savefig('plots/garage_area.png')
+gr_rms.figure.savefig('plots/above_ground_rooms.png')
+gar_a.fig.savefig('plots/garage_area.png')
 #%%
 '''
 Here we see that there is an outlier in the Total Rooms Above Ground (=14) and
