@@ -70,16 +70,19 @@ distributed.
 print(train.corr()['SalePrice'].sort_values(ascending=False))
 #%%
 ## Distribution of top 3 numerical features
+## Overall quality
 o_qual = sns.boxplot(x='OverallQual', y='SalePrice', data=train)
 plt.title('Overall Quality vs. Sale Price')
 plt.show()
+## Above ground living area
 gr_area = sns.jointplot(x='SalePrice', y='GrLivArea', data=train)
 gr_area.fig.suptitle('Above ground living area\n vs.SalePrice')
 gr_area.fig.tight_layout()
 gr_area.fig.subplots_adjust(top=0.9)
 plt.show()
+## Cars per Garage
 gar_n = sns.boxplot(x='GarageCars',y='SalePrice', data=train)
-plt.suptitle('Number of Cars in Garage')
+plt.suptitle('Cars per Garage')
 plt.title('vs. Sale Price')
 plt.show()
 o_qual.savefig('plots/overall_qual.png')
@@ -96,13 +99,42 @@ outliers is very common across the board. They are:
     * A property with quality = 10 but very low sale price
     * Properties with large living areas but very low sale price
     * Homes with 4 car garages sell lower than those with 3 car garages
-We will remove these outliers here.
+Since these dont make sense generally, we will remove these outliers here.  We
+will also maintain this criteria when processing new/test data.
 '''
-
+## Overall Quality outliers
+train = train.drop(train[(train['SalePrice'] < 200000)
+                         & (train['OverallQual'] >= 9)].index)
+## Above ground living area outliers
+train = train.drop(train[(train['SalePrice'] < 200000)
+                         & (train['GrLivArea'] > 4000)].index)
+## Four car garage outliers
+train = train.drop(train[(train['SalePrice'] < 300000)
+                         & (train['GarageCars'] >= 3)].index)
+#%%
+## Check new distribution of top 3 numerical features
+## Overall quality
+o_qual = sns.boxplot(x='OverallQual', y='SalePrice', data=train)
+plt.title('Overall Quality vs. Sale Price')
+plt.show()
+## Above ground living area
+gr_area = sns.jointplot(x='SalePrice', y='GrLivArea', data=train)
+gr_area.fig.suptitle('Above ground living area\n vs.SalePrice')
+gr_area.fig.tight_layout()
+gr_area.fig.subplots_adjust(top=0.9)
+plt.show()
+## Cars per Garage
+gar_n = sns.boxplot(x='GarageCars',y='SalePrice', data=train)
+plt.suptitle('Cars per Garage')
+plt.title('vs. Sale Price')
+plt.show()
+o_qual.savefig('plots/overall_qual.png')
+gr_area.savefig('plots/above_ground.png')
+gar_n.savefig('plots/garace_cars.png')
 #%%
 '''
-As suspected, the variables most correlated are those that deal with quality
-and physical area.
+Much better.  Moving on, as suspected, the variables most correlated with sale
+prince are those that deal with quality and physical area.
 '''
 ## Get the list of numeric and categorical columns\n",
 df = df_train
