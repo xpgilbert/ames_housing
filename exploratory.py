@@ -73,7 +73,7 @@ log.savefig('plots/log_target+1.png')
 #%%
 '''
 From the plots and information above, we can see that there are quite a lot
-variables and that the target is correlated most with features relating to 
+variables and that the target is correlated most with features relating to
 area and quality.  Also interesting is that the variables associated with
 luxury features, such as a fireplace and wood deck, are highly correlated.
 We also know to engineer the target variable such that it is normally
@@ -102,9 +102,9 @@ o_qual.figure.savefig('plots/overall_qual.png')
 gr_area.fig.savefig('plots/above_ground.png')
 gar_n.figure.savefig('plots/garage_cars.png')
 #%%
-''' This is a popular dataset so some of the feature engineering and 
+''' This is a popular dataset so some of the feature engineering and
 exploratory analysis are either verbatim or inspired by notebooks Ive browsed
-before starting my own analysis.  I will try to be explicit as possible when 
+before starting my own analysis.  I will try to be explicit as possible when
 using strategies others have used, but may not link a source as some of these
 methods are very common when training a model using this data set.
 For example, the plots above show that we have some outliers.  Removing these
@@ -148,7 +148,7 @@ gar_n.figure.savefig('plots/garage_cars.png')
 #%%
 '''
 Since we found outliers in features dealing with the garage and above
-ground space, and since there are related features in the top ten 
+ground space, and since there are related features in the top ten
 correlations, lets inspect those as well.
 '''
 ## Above ground rooms
@@ -261,42 +261,3 @@ sale has no basement.
 ## Total missing from each column
 print(missing.isnull().sum().sort_values(ascending=False))
 #%%
-## A missing value in these columns represents the None class
-none_cols = ['Alley', 'MasVnrType', 'BsmtQual', 'BsmtCond', 'BsmtExposure',
-       'BsmtFinType1', 'BsmtFinType2', 'FireplaceQu', 'GarageType',
-       'GarageFinish', 'GarageQual', 'GarageCond', 'PoolQC', 'Fence',
-       'MiscFeature']
-cols = train.columns[~train.columns.isin(none_cols)]
-print(len(cols))
-print(len(none_cols))
-#%%
-## Get training data means and modes to impute
-def get_imputes(data):
-    imputes = {}
-    cols = train.columns[~train.columns.isin(none_cols)]
-    for col in cols:
-        if data[col].dtype == 'object':
-            imputes[col] = data[col].mode()[0]
-        else:
-            imputes[col] = data[col].mean()   
-    return imputes
-## Impute missing values function
-def impute_missing(data, imputes):
-    data = data.copy()
-    for acol in none_cols:
-        data[acol] = data[acol].fillna('None')
-    for bcol in data.columns:
-        if bcol in imputes.keys():
-            data[bcol] = data[bcol].fillna(imputes[bcol])
-    return data
-imputes = get_imputes(train)
-df_train = impute_missing(train, imputes)
-print(df_train.isnull().sum().max())
-
-
-
-
-
-
-
-
