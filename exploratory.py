@@ -190,6 +190,42 @@ for cat in categorical_columns:
     n = str(len(df[cat].unique()))
     print(f'{cat:16}{n:1}')
 #%%
+## Lets look at some of the variables by sale price
+## We should start with the variables we know relate to outliers
+## Basement
+bsmt = sns.violinplot(y='SalePrice', x='BsmtFinType1', data=train)
+plt.title('Basement Finish vs\n Sale Price')
+plt.show()
+bsmt.figure.savefig('bsmt_finish.png')
+
+grg = sns.boxplot(y='SalePrice', x='GarageQual', data=train)
+plt.title('Garage Quality vs\n Sale Price')
+plt.show()
+grg.figure.savefig('grg_qual.png')
+#%%
+'''
+Wait, we know that there should be 6 classes for GarageQual, but we only see 5
+in our plot.  It is most likely a nan class.
+'''
+print(train['GarageQual'].unique())
+'''
+Yup.  We'll deal with that later in processing.  For now, we can see that the
+classes are well balanced and not skewed, so imputing here should be straight
+foreward.  Hope this is the case throughout.  Lets continue the exploratory
+with visualizations.
+'''
+#%%
+## Sale price distribution by Alley class
+alley = sns.displot(x='SalePrice', data=train, hue='Alley', bins=30)
+plt.title('Sale Price by Alley class')
+plt.show()
+alley.fig.savefig('alley_class.png')
+## Factorplot of house style
+style = sns.catplot(x='HouseStyle', y='SalePrice', data=train)
+plt.title('Sale price by house style')
+plt.show()
+style.fig.savefig('house_style.png')
+
 
 
 
