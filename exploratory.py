@@ -52,6 +52,19 @@ plt.title('Target Distribution')
 plt.show()
 dist.savefig('plots/target_distribution.png')
 #%%
+## Correlation heatmap of top 5 features
+cols = train.corr().sort_values(by='SalePrice', ascending=False)[:10].index
+corr = train[cols].corr()
+fig, ax = plt.subplots(figsize=(10,6))
+sns.heatmap(corr, cmap = 'coolwarm', cbar=True, annot=True)
+plt.show()
+plt.savefig('plots/top10_corr.png')
+#%%
+fig, ax = plt.subplots(figsize=(10,6))
+sns.heatmap(train.corr().sort_values(by='SalePrice', ascending=False)[:10], cbar=True, cmap='viridis', ax=ax)
+plt.title('Correlation heatmap of numeric variables')
+plt.show()
+#%%
 ##Target is not normally distributed, lets try taking the log
 log = sns.displot(np.log1p(target), color='g', kde=True)
 plt.title('Log(Target+1)')
@@ -100,7 +113,8 @@ outliers is very common across the board. They are:
     * Sales with large living areas but very low sale price
     * Sales with 4 car garages sell lower than those with 3 car garages
 Since these dont make sense generally, we will remove these outliers here.  We
-will also maintain this criteria when processing new/test data.
+will also bear this in mind when deploying the model: we may wish to transform
+new data in these ranges.
 '''
 ## Overall quality outliers
 train = train.drop(train[(train['SalePrice'] < 200000)
@@ -153,7 +167,7 @@ gar_a.fig.savefig('plots/garage_area.png')
 '''
 Here we see that there is an outlier in the Total Rooms Above Ground (=14) and
 when the garage area exceeds 1200 feet, we have a few that sold less than
-300000.  We can remove these and add to our outlier criteria for new data.
+300000.  We can remove these and add to our transformations for new data.
 We also see that the variance in sale price is high when we reach the higher
 number of rooms above ground.  We can engineer a feature to represent the
 sweet spot of rooms above ground as a new variable for modeling.
@@ -196,12 +210,12 @@ for cat in categorical_columns:
 bsmt = sns.violinplot(y='SalePrice', x='BsmtFinType1', data=train)
 plt.title('Basement Finish vs\n Sale Price')
 plt.show()
-bsmt.figure.savefig('bsmt_finish.png')
+bsmt.figure.savefig('plots/bsmt_finish.png')
 
 grg = sns.boxplot(y='SalePrice', x='GarageQual', data=train)
 plt.title('Garage Quality vs\n Sale Price')
 plt.show()
-grg.figure.savefig('grg_qual.png')
+grg.figure.savefig('plots/grg_qual.png')
 #%%
 '''
 Wait, we know that there should be 6 classes for GarageQual, but we only see 5
@@ -211,7 +225,7 @@ print(train['GarageQual'].unique())
 '''
 Yup.  We'll deal with that later in processing.  For now, we can see that the
 classes are well balanced and not skewed, so imputing here should be straight
-foreward.  Hope this is the case throughout.  Lets continue the exploratory
+forward.  Hope this is the case throughout.  Lets continue the exploratory
 with visualizations.
 '''
 #%%
@@ -219,13 +233,65 @@ with visualizations.
 alley = sns.displot(x='SalePrice', data=train, hue='Alley', bins=30)
 plt.title('Sale Price by Alley class')
 plt.show()
-alley.fig.savefig('alley_class.png')
+alley.fig.savefig('plots/alley_class.png')
 ## Factorplot of house style
 style = sns.catplot(x='HouseStyle', y='SalePrice', data=train)
 plt.title('Sale price by house style')
 plt.show()
-style.fig.savefig('house_style.png')
-
+style.fig.savefig('plots/house_style.png')
+## Our construct, sweet_abvgrdrms
+con = sns.displot(x='SalePrice', hue='sweet_abvgrdrms', data=train)
+plt.title('AbvGrdRms construct distribution')
+plt.show()
+#%%
+## Lets move on to missing values
+missing = train[train.columns[train.isnull().any().values]]
+## Heatmap of columns with missing values
+sns.heatmap(missing.isnull().transpose(), cbar=True, cmap = 'viridis')
+plt.title('Missing value columns')
+plt.show()
+'''
+Looks like were missing quite a bit of information about the alley and pools.
+From the data dictionary, we see that sometimes, missing values represent the
+class None. We can see this in the missing values for the basement related
+features.  They all line up since the nan here actually represents that the
+sale has no basement.
+'''
+#%%
+## Total missing from each column
+print(missing.isnull().sum().sort_values(ascending=False))
+#%%
+## A missing value in these columns represents the None class
+none_cols = ['Alley', 'MasVnrType', 'BsmtQual', 'BsmtCond', 'BsmtExposure',
+       'BsmtFinType1', 'BsmtFinType2', 'FireplaceQu', 'GarageType',
+       'GarageFinish', 'GarageQual', 'GarageCond', 'PoolQC', 'Fence',
+       'MiscFeature']
+cols = train.columns[~train.columns.isin(none_cols)]
+print(len(cols))
+print(len(none_cols))
+#%%
+## Get training data means and modes to impute
+def get_imputes(data):
+    imputes = {}
+    cols = train.columns[~train.columns.isin(none_cols)]
+    for col in cols:
+        if data[col].dtype == 'object':
+            imputes[col] = data[col].mode()[0]
+        else:
+            imputes[col] = data[col].mean()   
+    return imputes
+## Impute missing values function
+def impute_missing(data, imputes):
+    data = data.copy()
+    for acol in none_cols:
+        data[acol] = data[acol].fillna('None')
+    for bcol in data.columns:
+        if bcol in imputes.keys():
+            data[bcol] = data[bcol].fillna(imputes[bcol])
+    return data
+imputes = get_imputes(train)
+df_train = impute_missing(train, imputes)
+print(df_train.isnull().sum().max())
 
 
 
