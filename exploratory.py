@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 ##Use whitegrid in seaborn
 sns.set_style('whitegrid')
+sns.set(rc={"figure.dpi":300, 'savefig.dpi':300})
 #%%
 ## Read and ready data
 train = pd.read_csv('data/train.csv')
@@ -221,6 +222,7 @@ grg.figure.savefig('plots/grg_qual.png')
 Wait, we know that there should be 6 classes for GarageQual, but we only see 5
 in our plot.  It is most likely a nan class.
 '''
+print('Unique GarageQual values:')
 print(train['GarageQual'].unique())
 '''
 Yup.  We'll deal with that later in processing.  For now, we can see that the
