@@ -61,6 +61,6 @@ print(df_test.isnull().sum().sort_values(ascending=False)[:20])
 #%%
 loader.update_imputes(df_test)
 df_test = loader.impute_missing(df_test)
-print(df_test.isnull().sum().sort_values(ascending=False)[:10])
+assert df_test.isnull().sum().max() == 0, 'Test set still has missing values'
 #%%
 

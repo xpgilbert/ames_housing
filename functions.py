@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 class Load():
-    def __init__(self, data, none_cols):
+    def __init__(self, data, none_cols = []):
         '''
         Parameters
         ----------
