@@ -246,6 +246,23 @@ con = sns.displot(x='SalePrice', hue='sweet_abvgrdrms', data=train)
 plt.title('AbvGrdRms construct distribution')
 plt.show()
 #%%
+## Distribution of dwelling types
+dwellings = sns.displot(x='MSSubClass', data=train, bins=25)
+plt.title('Distribution of Dwelling Types')
+plt.show()
+## Distribution of dwelling type by sale price
+d_sales = sns.boxplot(x='MSSubClass', y='SalePrice', data=train)
+plt.title('Dwelling Type vs\n Sale Price')
+plt.show()
+d_sales.figure.savefig('plots/d_sales.png')
+'''
+Looks like the vast majority of our sales are the 20 class, or "1-Story 1946
+& Newer All Styles".  It also appears like this class has the most variance.
+Our most expensive class is 60, or "2 Story 1946 & Newer".  If the dwelling
+is older than 1946 or has unfinished space, it looks like they will most
+likely be the cheapest.
+'''
+#%%
 ## Lets move on to missing values
 missing = train[train.columns[train.isnull().any().values]]
 ## Heatmap of columns with missing values
