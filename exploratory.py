@@ -279,6 +279,10 @@ basement over 6000sq ft in size and sold less than 200000.  Lets remove this
 as it will impact our scaler later.
 '''
 #%%
+qual = sns.displot(x='OverallQual', data=train)
+plt.title("Overall Quality")
+plt.show()
+#%%
 ## Lets move on to missing values
 missing = train[train.columns[train.isnull().any().values]]
 ## Heatmap of columns with missing values

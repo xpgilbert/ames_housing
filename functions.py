@@ -7,7 +7,7 @@ Created on Thu Jul 22 17:05:11 2021
 """
 import numpy as np
 import pandas as pd
-
+from sklearn.preprocessing import MinMaxScaler
 class Load():
     def __init__(self, data, none_cols = []):
         '''
@@ -87,3 +87,38 @@ class Load():
         for bcol in imputes.keys():
             data[bcol] = data[bcol].fillna(imputes[bcol])
         return data
+    def scale_numerics(self, data):
+        '''
+        Parameters
+        ----------
+        data : pandas DataFrame
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        '''
+        data = data.copy()
+        ## Convert MSSubClass to dtype object
+        data['MSSubClass'] = data['MSSubClass'].apply(str)
+        assert data['MSSubClass'].dtype != 'int', 'Dwelling type is numeric'
+        
+        ## Select numeric features for modeling
+        nums = ['OverallQual', 'GrLivArea', 'GarageCars', 'TotalBsmtSF', 
+        'GarageArea', '1stFlrSF', 'FullBath', 'TotRmsAbvGrd', 'YearBuilt']
+        cats = [col for col in data.columns if data[col].dtype == 'object']
+        for col in data.columns:
+            if col not in cats:
+                if col not in nums:
+                    data = data.drop(col, axis=1)
+        # scalers = {}
+        # for col in nums:
+        #     scaler = MinMaxScaler()
+        #     data[col] = scaler.fit_transform(data[col])
+        #     scalers[col] = scaler
+        # self.scalers = scalers
+        scaler = MinMaxScaler()
+        data[nums] = scaler.fit_transform(data[nums])
+        return data
+        

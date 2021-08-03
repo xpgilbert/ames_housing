@@ -13,8 +13,11 @@ Created on Thu Jul 22 10:09:33 2021
 ## Linear Algebra, Data Science
 # import numpy as np
 import pandas as pd
+## Visualizations
 import seaborn as sns
 import matplotlib.pyplot as plt
+## Scaler
+from sklearn.preprocessing import MinMaxScaler
 from functions import Load
 #%%
 ## Read and ready data
@@ -68,10 +71,16 @@ loader.update_imputes(df_test)
 df_test = loader.impute_missing(df_test)
 assert df_test.isnull().sum().max() == 0, 'Test set still has missing values'
 #%%
-## On to transforming the numerical data.  From the exploration, we know that
-## some numeric variables have a high correlation (>0.6) with SalePrice.  Lets
-## address these and SalePrice itself here.
-## Distribution of total basement square footage
-bsmt_sqf = sns.displot(x='TotalBsmtSF', data=df_train)
-plt.title('Basement Square Footage')
-plt.show()
+## MSSubClass is categorical.
+df_train['MSSubClass'] = df_train['MSSubClass'].apply(str)
+assert df_train['MSSubClass'].dtype != 'int', 'MSSubClass is numeric'
+## Convert categorical to dummies
+cats = [col for col in df_train.columns if df_train[col].dtype == 'object']
+df = df_train.copy()
+df_train = df_train.drop(cats, axis=1)
+
+#%%
+## From the exploration, we know that some numeric variables have a high 
+## correlation (>0.5) with SalePrice.  Lets address these here.
+loader.scale_numerics(df_train)
+
