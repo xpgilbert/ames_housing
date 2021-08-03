@@ -53,17 +53,18 @@ plt.title('Target Distribution')
 plt.show()
 dist.savefig('plots/target_distribution.png')
 #%%
-## Correlation heatmap of top 5 features
+## Correlation heatmap of top 10 features
 cols = train.corr().sort_values(by='SalePrice', ascending=False)[:10].index
 corr = train[cols].corr()
 fig, ax = plt.subplots(figsize=(10,6))
 sns.heatmap(corr, cmap = 'coolwarm', cbar=True, annot=True)
+plt.title('Correlations of top 10 variables')
 plt.show()
 plt.savefig('plots/top10_corr.png')
 #%%
 fig, ax = plt.subplots(figsize=(10,6))
 sns.heatmap(train.corr().sort_values(by='SalePrice', ascending=False)[:10], cbar=True, cmap='viridis', ax=ax)
-plt.title('Correlation heatmap of numeric variables')
+plt.title('Correlation heatmap of numeric variables to top variables')
 plt.show()
 #%%
 ##Target is not normally distributed, lets try taking the log
@@ -261,6 +262,21 @@ Looks like the vast majority of our sales are the 20 class, or "1-Story 1946
 Our most expensive class is 60, or "2 Story 1946 & Newer".  If the dwelling
 is older than 1946 or has unfinished space, it looks like they will most
 likely be the cheapest.
+'''
+#%%
+## Lets examine numerical columns to inform our normalization strategies
+## Distribution of total basement square footage
+bsmt_sqf = sns.displot(x='TotalBsmtSF', data=train)
+plt.title('Basement Square Footage')
+plt.show()
+## Jointplot with sales price
+bsmt_sq_s = sns.jointplot(x='TotalBsmtSF', y='SalePrice', data=train)
+plt.title('Basement Square Footage vs \n SalePrice')
+plt.show()
+'''
+Again we have an outlier here from our exploratory analysis.  There is a 
+basement over 6000sq ft in size and sold less than 200000.  Lets remove this
+as it will impact our scaler later.
 '''
 #%%
 ## Lets move on to missing values

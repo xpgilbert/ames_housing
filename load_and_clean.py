@@ -11,8 +11,10 @@ Created on Thu Jul 22 10:09:33 2021
 
 ## Imports
 ## Linear Algebra, Data Science
-import numpy as np
+# import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from functions import Load
 #%%
 ## Read and ready data
@@ -37,6 +39,9 @@ train = train.drop(train[(train['SalePrice'] < 300000)
 ## Many rooms above ground outliers
 train = train.drop(train[(train['SalePrice'] < 300000)
                          & (train['TotRmsAbvGrd'] > 12)].index)
+## Large basement sold for cheap
+train = train.drop(train[(train['SalePrice'] < 300000)
+                         & (train['TotalBsmtSF'] > 6000)].index)
 #%%
 df_train = train.drop('SalePrice', axis=1)
 target = train['SalePrice']
@@ -63,4 +68,10 @@ loader.update_imputes(df_test)
 df_test = loader.impute_missing(df_test)
 assert df_test.isnull().sum().max() == 0, 'Test set still has missing values'
 #%%
-
+## On to transforming the numerical data.  From the exploration, we know that
+## some numeric variables have a high correlation (>0.6) with SalePrice.  Lets
+## address these and SalePrice itself here.
+## Distribution of total basement square footage
+bsmt_sqf = sns.displot(x='TotalBsmtSF', data=df_train)
+plt.title('Basement Square Footage')
+plt.show()
