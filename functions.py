@@ -8,7 +8,7 @@ Created on Thu Jul 22 17:05:11 2021
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-class Load():
+class Clean():
     def __init__(self, data, none_cols = []):
         '''
         Parameters
@@ -87,6 +87,22 @@ class Load():
         for bcol in imputes.keys():
             data[bcol] = data[bcol].fillna(imputes[bcol])
         return data
+    
+    def one_hot_encode(self, data):
+        '''
+        
+        One hot encode a pandas DataFrame
+
+        '''        
+        
+        cats = [col for col in data.columns if data[col].dtype == 'object']
+        cat_cols = data[cats]
+        temp_df = data.drop(cats, axis=1)
+        dummies = pd.get_dummies(cat_cols, drop_first=True)
+        data = pd.concat([temp_df, dummies], axis=1)
+        return data
+    
+class Process():
     def scale_numerics(self, data):
         '''
         Parameters

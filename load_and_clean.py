@@ -18,7 +18,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 ## Scaler
 from sklearn.preprocessing import MinMaxScaler
-from functions import Load
+from functions import Clean
 #%%
 ## Read and ready data
 train = pd.read_csv('data/train.csv')
@@ -57,8 +57,8 @@ none_cols = ['Alley','MasVnrType','BsmtQual','BsmtCond',
                  'BsmtExposure','BsmtFinType1','BsmtFinType2',
                  'FireplaceQu','GarageType','GarageFinish','GarageQual',
                  'GarageCond','PoolQC','Fence','MiscFeature']
-loader = Load(df_train, none_cols)
-df_train = loader.impute_missing(df_train)
+cleaner = Clean(df_train, none_cols)
+df_train = cleaner.impute_missing(df_train)
 #%%
 ## Apply same imputes to test data using imputes from training set
 ## Check that the test set has similar distribution of nulls, where
@@ -67,20 +67,19 @@ df_train = loader.impute_missing(df_train)
 df_test = test
 print(df_test.isnull().sum().sort_values(ascending=False)[:20])
 #%%
-loader.update_imputes(df_test)
-df_test = loader.impute_missing(df_test)
+cleaner.update_imputes(df_test)
+df_test = cleaner.impute_missing(df_test)
 assert df_test.isnull().sum().max() == 0, 'Test set still has missing values'
 #%%
 ## MSSubClass is categorical.
 df_train['MSSubClass'] = df_train['MSSubClass'].apply(str)
 assert df_train['MSSubClass'].dtype != 'int', 'MSSubClass is numeric'
-## Convert categorical to dummies
-cats = [col for col in df_train.columns if df_train[col].dtype == 'object']
-df = df_train.copy()
-df_train = df_train.drop(cats, axis=1)
-
 #%%
-## From the exploration, we know that some numeric variables have a high 
-## correlation (>0.5) with SalePrice.  Lets address these here.
-loader.scale_numerics(df_train)
+## Convert categorical to dummies
+df_train = cleaner.one_hot_encode(df_train)
+df_test = cleaner.one_hot_encode(df_test)
+#%%
+df_train.to_csv('data/df_train.csv')
+df_test.to_csv('data/df_test.csv')
+pd.DataFrame(target).to_csv('data/target.csv')
 
