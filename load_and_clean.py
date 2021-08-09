@@ -11,13 +11,8 @@ Created on Thu Jul 22 10:09:33 2021
 
 ## Imports
 ## Linear Algebra, Data Science
-# import numpy as np
 import pandas as pd
 ## Visualizations
-import seaborn as sns
-import matplotlib.pyplot as plt
-## Scaler
-from sklearn.preprocessing import MinMaxScaler
 from functions import Clean
 #%%
 ## Read and ready data
@@ -79,7 +74,7 @@ assert df_train['MSSubClass'].dtype != 'int', 'MSSubClass is numeric'
 df_train = cleaner.one_hot_encode(df_train)
 df_test = cleaner.one_hot_encode(df_test)
 #%%
-df_train.to_csv('data/df_train.csv')
-df_test.to_csv('data/df_test.csv')
-pd.DataFrame(target).to_csv('data/target.csv')
+df_train.to_csv('data/df_train.csv', index=False)
+df_test.to_csv('data/df_test.csv', index=False)
+pd.DataFrame(target).to_csv('data/target.csv', index=False)
 
