@@ -20,6 +20,8 @@ sns.set_style('whitegrid')
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
+## Custome PreProcessing
+from functions import Process
 
 #%%
 ## Import csv to pandas DataFrames
@@ -36,9 +38,9 @@ start, we can use VarianceThreshold to remove features with low variance.
 ## For binary, Var[x] = p(1-p) 
 selector = VarianceThreshold(threshold=.85*(1-.85)) ## set threshold to 85%
 ## Only interested in binary variables
-df = df_train
+df = df_train.copy()
 binary_columns = [col for col in df.columns if df[col].nunique() == 2]
-binary = df_train[binary_columns]
+binary = df[binary_columns]
 #%%
 ## Remove binary
 df_train = df_train.drop(binary_columns, axis=1)
@@ -51,15 +53,22 @@ selected = binary.columns
 ## For non-binary variables, we can use SelectKBest from Sklearn
 selector = SelectKBest(f_regression, k=15)
 selector.fit(df_train, target)
-df_train = df_train[df_train.columns[selector.get_support()]]
-selected = selected.append(df_train.columns)
-
+temp_df = df_train[df_train.columns[selector.get_support()]]
+selected = selected.append(temp_df.columns)
+## Inlcude all dwelling types for modeling
+selected = selected.append(df.filter(regex='MSSubClass.*').columns)
+selected = list(set(selected))
+#%%
+## Reduce dimensions
+processor = Process()
+df_train = processor.select(df, selected)
+df_test = processor.select(df_test, selected)
 #%%
 ## Pairplot of the 15 best variables to see their distributions.
-pair = sns.pairplot(df_train)
-plt.title('Distributions of 15 best numeric variables')
-plt.show()
-pair.savefig('plots/pairplot.png')
+# pair = sns.pairplot(temp_df)
+# plt.title('Distributions of 15 best numeric variables')
+# plt.show()
+# pair.savefig('plots/pairplot.png')
 #%%
 '''
 Looks like most of the variables are normally distribute but some have skewed
