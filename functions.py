@@ -114,13 +114,8 @@ class Process():
         data : pandas DataFrame
 
         '''
-        data = data.copy()
-        ## Convert MSSubClass to dtype object
-        data['MSSubClass'] = data['MSSubClass'].apply(str)
-        assert data['MSSubClass'].dtype != 'int', 'Dwelling type is numeric'        
+        data = data.copy()   
         ## Select numeric features for modeling
-        nums = ['OverallQual', 'GrLivArea', 'GarageCars', 'TotalBsmtSF', 
-        'GarageArea', '1stFlrSF', 'FullBath', 'TotRmsAbvGrd', 'YearBuilt']
         cats = [col for col in data.columns if data[col].dtype == 'object']
         for col in data.columns:
             if col not in cats:
@@ -135,6 +130,7 @@ class Process():
         scaler = MinMaxScaler()
         data[nums] = scaler.fit_transform(data[nums])
         return data
+    
     def select(self, data, selected):
         data = data.copy()
         data = data[[col for col in selected if col in data.columns]]
