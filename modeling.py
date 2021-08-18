@@ -65,12 +65,12 @@ df_test = processor.bin_numerics(df_test, bins)
 ## 
 #%%
 ## Mean Encode some variables
-cols = ['Neighborhood', 'YearBuilt_band', 'MSSubClass']
+cols = ['Neighborhood', 'YearBuilt_band'] #, 'MSSubClass']
 for col in cols:
     df_train = processor.mean_encode_train(df_train, col)
 for col in cols:
     df_test = processor.mean_encode_new(df_test, col)
-
+df_train = df_train.drop('target', axis=1)
 #%%
 
 
