@@ -6,7 +6,7 @@ Created on Tue Aug  3 23:03:19 2021
 @author: Gilly
 
 Modeling with Python
-Ames, Iowa Real Estate Dataset
+Ames, Iowa Housing Dataset
 """
 
 ## Imports
@@ -48,32 +48,29 @@ target = np.log1p(target)
 test_ids = df_test['Id']
 #%%
 '''
-Here, we will first mean encode for some variables. The categorical 
-variables will be treated individually and then we will bin some numerical 
+Here, we will first mean encode for some variables. The categorical
+variables will be treated individually and then we will bin some numerical
 variables into some categorical.
 '''
 processor = Process()
 ## Add target variable for training
 df_train['target'] = target
 ## Create bin dictionary for binning numeric variables
-bins = {}
-bins['YearBuilt'] = [0, 1970, 1990, 2010, 2030]
-#bins['']
-## Bin numeric variables into categorical
-df_train = processor.bin_numerics(df_train, bins)
-df_test = processor.bin_numerics(df_test, bins)
-## 
+# bins = {}
+# bins['YearBuilt'] = [0, 1970, 1990, 2010, 2030]
+# #bins['']
+# ## Bin numeric variables into categorical
+# df_train = processor.bin_numerics(df_train, bins)
+# df_test = processor.bin_numerics(df_test, bins)
+# ##
 #%%
 ## Mean Encode some variables
-cols = ['Neighborhood', 'YearBuilt_band'] #, 'MSSubClass']
+cols = ['Neighborhood', 'MSSubClass'] #, 'YearBuilt_band]
 for col in cols:
     df_train = processor.mean_encode_train(df_train, col)
 for col in cols:
     df_test = processor.mean_encode_new(df_test, col)
 df_train = df_train.drop('target', axis=1)
-#%%
-
-
 
 #%%
 
@@ -86,31 +83,33 @@ First we will want to reduce the dimensionality of our training set.  We have
 over 200 features, the vast majority of which are binary dummy features.  To
 start, we can use VarianceThreshold to remove features with low variance.
 '''
-## VarianceThreshold
-## For binary, Var[x] = p(1-p) 
-selector = VarianceThreshold(threshold=.85*(1-.85)) ## set threshold to 85%
-## Only interested in binary variables
+# ## VarianceThreshold
+# ## For binary, Var[x] = p(1-p)
+# selector = VarianceThreshold(threshold=.8*(1-.8)) ## set threshold to 85%
+# ## Only interested in binary variables
 df = df_train.copy()
-binary_columns = [col for col in df.columns if df[col].nunique() == 2]
-binary = df[binary_columns]
-#%%
-## Remove binary
-df_train = df_train.drop(binary_columns, axis=1)
-## Fit selector
-selector.fit(binary)
-binary = binary[binary.columns[selector.get_support()]]
-## Create list of binary features to select from df_test
-selected = binary.columns
+# binary_columns = [col for col in df.columns if df[col].nunique() == 2]
+# binary = df[binary_columns]
+# #%%
+# ## Remove binary
+# df_train = df_train.drop(binary_columns, axis=1)
+# ## Fit selector
+# selector.fit(binary)
+# binary = binary[binary.columns[selector.get_support()]]
+# ## Create list of binary features to select from df_test
+# selected = binary.columns
 #%%
 ## For non-binary variables, we can use SelectKBest from Sklearn
-selector = SelectKBest(f_regression, k=15)
+# selected = []
+selector = SelectKBest(f_regression, k=50)
 selector.fit(df_train, target)
 temp_df = df_train[df_train.columns[selector.get_support()]]
 numerics = temp_df.columns
-selected = selected.append(temp_df.columns)
+# selected = selected.append(temp_df.columns)
+selected = temp_df.columns.to_list()
 ## Inlcude all dwelling types for modeling
-selected = selected.append(df.filter(regex='MSSubClass.*').columns)
-selected = list(set(selected))
+# selected = selected.append(df.filter(regex='MSSubClass.*').columns)
+# elected = list(set(selected))
 #%%
 ## Reduce dimensions
 df_train = processor.select(df, selected)
@@ -162,7 +161,7 @@ print("MSE: %.2f" % mse)
 print("RMSE: %.2f" % (mse**(1/2.0)))
 #%%
 '''
-So definitely need to tweak some hyperparameters.  We can also try using 
+So definitely need to tweak some hyperparameters.  We can also try using
 a different model but for now lets use grid search for the xgboost.
 '''
 ## Create dmatrices
@@ -172,10 +171,10 @@ dmat_test = xgb.DMatrix(X_test, label=y_test)
 xgbr = xgb.XGBRFRegressor()
 params = {
     'objective' : ['reg:squarederror'],
-    'max_depth' : [4,6,8],
-    'eta' : [0.03, 0.06],
-    'min_child_weight' : [3,6,9],
-    'n_estimators' : [400, 600]
+    'max_depth' : [20,40],
+    'eta' : [0.03],
+    'min_child_weight' : [2,3],
+    'n_estimators' : [600]
     }
 xgbr_grid = GridSearchCV(xgbr, params, cv=5, n_jobs=-1, verbose=2)
 xgbr_grid.fit(X_train, y_train)
@@ -185,7 +184,7 @@ best_params = xgbr_grid.best_params_
 model = xgb.train(best_params,
                   dmat_train,
                   num_boost_round = 500,
-                  early_stopping_rounds=10,
+                  early_stopping_rounds=20,
                   evals=[(dmat_test, 'Test')]
               )
 #%%
@@ -204,8 +203,3 @@ predictions = np.expm1(predictions)
 ## Create submission dataframe
 submission = pd.DataFrame.from_dict({'Id':test_ids, 'SalePrice':predictions})
 submission.to_csv('submission.csv', index=False)
-
-
-
-
-
