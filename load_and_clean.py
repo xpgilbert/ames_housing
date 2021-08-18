@@ -70,10 +70,6 @@ assert df_test.isnull().sum().max() == 0, 'Test set still has missing values'
 df_train['MSSubClass'] = df_train['MSSubClass'].apply(str)
 assert df_train['MSSubClass'].dtype != 'int', 'MSSubClass is numeric'
 #%%
-## Convert categorical to dummies
-df_train = cleaner.one_hot_encode(df_train)
-df_test = cleaner.one_hot_encode(df_test)
-#%%
 df_train.to_csv('data/df_train.csv', index=False)
 df_test.to_csv('data/df_test.csv', index=False)
 pd.DataFrame(target).to_csv('data/target.csv', index=False)

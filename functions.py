@@ -88,11 +88,32 @@ class Clean():
             data[bcol] = data[bcol].fillna(imputes[bcol])
         return data
     
+class Process():
+    def __init__(self):
+        self.bins = {}
+    def bin_numerics(self, data, column_bins):
+        for col in list(column_bins.keys()):
+            col_name = col + '_band'
+            data[col_name] = pd.cut(data[col], bins = column_bins[col])
+        return data
+            
+    def mean_encode_train(self, data, column, target='target'):
+        '''
+        Mean encode variable
+        
+        '''
+        ## Groupby column, take mean
+        mean_dic = data.groupby(column)[target].mean().to_dict()
+        ## Map mean to categorical
+        data[column] = data[column].map(mean_dic)
+        self.column = mean_dic
+        return data
+    
     def one_hot_encode(self, data):
         '''
         
         One hot encode a pandas DataFrame
-
+    
         '''        
         
         cats = [col for col in data.columns if data[col].dtype == 'object']
@@ -101,8 +122,7 @@ class Clean():
         dummies = pd.get_dummies(cat_cols, drop_first=True)
         data = pd.concat([temp_df, dummies], axis=1)
         return data
-    
-class Process():
+
     def scale_numerics(self, data):
         '''
         Parameters
@@ -117,6 +137,7 @@ class Process():
         data = data.copy()   
         ## Select numeric features for modeling
         cats = [col for col in data.columns if data[col].dtype == 'object']
+        nums = data[~cats]
         for col in data.columns:
             if col not in cats:
                 if col not in nums:
