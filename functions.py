@@ -91,6 +91,7 @@ class Clean():
 class Process():
     def __init__(self):
         self.bins = {}
+        self.means = {}
     def bin_numerics(self, data, column_bins):
         for col in list(column_bins.keys()):
             col_name = col + '_band'
@@ -99,15 +100,28 @@ class Process():
             
     def mean_encode_train(self, data, column, target='target'):
         '''
-        Mean encode variable
+        Mean encode variable in training set
         
         '''
         ## Groupby column, take mean
         mean_dic = data.groupby(column)[target].mean().to_dict()
+        ## Save means for use later
+        self.means[column] = mean_dic
         ## Map mean to categorical
         data[column] = data[column].map(mean_dic)
-        self.column = mean_dic
         return data
+    
+    def mean_encode_new(self, data, column):
+        '''
+        Mean encode variable for new data
+        
+        '''
+        ## Pull means from earlier
+        mean_dic = self.means[column]
+        ## Map mean to categorical
+        data[column] = data[column].map(mean_dic)
+        return data
+    
     
     def one_hot_encode(self, data):
         '''

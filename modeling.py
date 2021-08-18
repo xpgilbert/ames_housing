@@ -58,16 +58,20 @@ df_train['target'] = target
 ## Create bin dictionary for binning numeric variables
 bins = {}
 bins['YearBuilt'] = [0, 1970, 1990, 2010, 2030]
-bins['']
+#bins['']
 ## Bin numeric variables into categorical
 df_train = processor.bin_numerics(df_train, bins)
+df_test = processor.bin_numerics(df_test, bins)
 ## 
 #%%
-cols = ['Neighborhood', 'YearBuilt_band']
+## Mean Encode some variables
+cols = ['Neighborhood', 'YearBuilt_band', 'MSSubClass']
 for col in cols:
     df_train = processor.mean_encode_train(df_train, col)
+for col in cols:
+    df_test = processor.mean_encode_new(df_test, col)
 
-
+#%%
 
 
 
@@ -183,9 +187,13 @@ model = xgb.train(best_params,
                   num_boost_round = 500,
                   early_stopping_rounds=10,
                   evals=[(dmat_test, 'Test')]
-                  )
+              )
 #%%
-
+dxtest = xgb.DMatrix(X_test)
+y_pred = model.predict(dxtest)
+mse = mean_squared_error(y_test, y_pred)
+print("MSE: %.2f" % mse)
+print("RMSE: %.2f" % (mse**(1/2.0)))
 
 #%%
 ## Generate predictions based on test set
