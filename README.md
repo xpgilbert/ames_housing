@@ -10,8 +10,8 @@
 
 ## Introduction
 This is a real estate pricing estimator for Ames, Iowa based
-on the Ames Housing dataset from [here](https://www.google.com). We will detail the exploratory analysis that influenced our feature engineering, model selection, and hyperparameter tuning.  This dataset is also part of a [kaggle competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) and our submission placed in the top 25% of submissions with a
-score of 0.25.  On our validation set for which I detail below,
+on the Ames Housing dataset from [here](https://www.google.com). We will detail the exploratory analysis that influenced our feature engineering, model selection, and hyperparameter tuning.  This dataset is also part of a [kaggle competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) and our submission placed in the top 60% of submissions with a
+score of 0.15.  On our validation set for which I detail below,
 we scored an MAE of 0.01.  
 
 ## Methods
