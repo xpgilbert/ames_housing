@@ -23,6 +23,7 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
 ## Scaler
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 ## Custome PreProcessing
 from functions import Process
 ## Train-test-split, KFold
@@ -34,6 +35,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error
 ## XGBoost
 import xgboost as xgb
+## OLS
+import statsmodels.api as sm
 
 ## Set constants
 random_state = 42
@@ -151,7 +154,7 @@ Looks like most of the variables are normally distributed but some have skewed
 distributions.  We will normalize these features with a MinMaxScaler since
 they have lots of zeroes.
 '''
-scaler = MinMaxScaler()
+scaler = StandardScaler()
 df_train[numerics] = scaler.fit_transform(df_train[numerics])
 df_test[numerics] = scaler.fit_transform(df_test[numerics])
 # df_train = scaler.fit_transform(df_train)
@@ -209,13 +212,20 @@ model = xgb.train(best_params,
               )
 #%%
 dxtest = xgb.DMatrix(X_test)
-y_pred = model.predict(dxtest)
-mse = mean_squared_error(y_test, y_pred)
+xgb_pred = model.predict(dxtest)
+mse = mean_squared_error(y_test, xgb_pred)
 print("MSE: %.2f" % mse)
 print("RMSE: %.2f" % (mse**(1/2.0)))
-
 #%%
-## Generate predictions based on test set
+## Modeling using OLS
+ols = sm.OLS(y_train, X_train)
+results = ols.fit()
+ols_pred = results.predict(X_test)
+mse = mean_squared_error(y_test, ols_pred)
+print("MSE: %.2f" % mse)
+print("RMSE: %.2f" % (mse**(1/2.0)))
+#%%
+## Generate predictions based on test set with XGBoost
 dtest = xgb.DMatrix(df_test)
 predictions = model.predict(dtest)
 ## Return to non-normalized scale
