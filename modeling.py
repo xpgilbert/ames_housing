@@ -140,10 +140,10 @@ for col in df_train.columns:
 df_test = df_test.reindex(df_train.columns, axis=1)
 #%%
 ## Pairplot of the 15 best variables to see their distributions.
-pair = sns.pairplot(temp_df)
-plt.title('Distributions of 15 best numeric variables')
-plt.show()
-pair.savefig('plots/pairplot.png')
+# pair = sns.pairplot(temp_df)
+# plt.title('Distributions of 15 best numeric variables')
+# plt.show()
+# pair.savefig('plots/pairplot.png')
 
 #%%
 '''
@@ -192,7 +192,7 @@ xgbr = xgb.XGBRFRegressor()
 params = {
     'objective' : ['reg:squarederror'],
     'max_depth' : [40,60],
-    'eta' : 0.03,
+    'eta' : [0.03],
     'min_child_weight' : [2,4],
     'n_estimators' : [600,800]
     }
