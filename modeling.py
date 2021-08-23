@@ -56,23 +56,44 @@ processor = Process()
 ## Add target variable for training
 df_train['target'] = target
 ## Create bin dictionary for binning numeric variables
-bins = {}
-bins['YearBuilt'] = [0, 1970, 1990, 2010, 2030]
-# #bins['']
-## Bin numeric variables into categorical
-df_train = processor.bin_numerics(df_train, bins)
-df_test = processor.bin_numerics(df_test, bins)
+# bins = {}
+# bins['YearBuilt'] = [0, 1970, 1990, 2010, 2030]
+# # #bins['']
+# ## Bin numeric variables into categorical
+# df_train = processor.bin_numerics(df_train, bins)
+# df_test = processor.bin_numerics(df_test, bins)
+#%%
+## Engineer new variables
+df_train['years_to_remod'] = df_train['YearRemodAdd'] -  df_train['YearBuilt']
+df_test['years_to_remod'] = df_test['YearRemodAdd'] -  df_test['YearBuilt']
+#%%
+## Total living space including finished basement
+basements = ['GLQ', 'ALQ', 'BLQ', 'Rec']
+def total_space(data, basements):
+    for val in data['BsmtFinType1']:
+        if val in basements:
+            fin1 = data['BsmtFinSF1']
+        else:
+            fin1 = 0
+    for val in data['BsmtFinType2']:
+        if val in basements:
+            fin2 = data['BsmtFinSF2']
+        else:
+            fin2 = 0
+    totals = data['GrLivArea'] + fin1 + fin2
+    return totals
+df_train['total_space'] = total_space(df_train, basements)
+df_test['total_space'] = total_space(df_test, basements)
 #%%
 ## Mean Encode some variables
-cols = ['Neighborhood', 'MSSubClass', 'YearBuilt_band']
+cols = ['Neighborhood', 'MSSubClass', 'Functional', 'MiscFeature'
+        , 'BsmtFinType1', 'BsmtFinType2']
 for col in cols:
     df_train = processor.mean_encode_train(df_train, col)
 for col in cols:
     df_test = processor.mean_encode_new(df_test, col)
 df_train = df_train.drop('target', axis=1)
-
 #%%
-
 ## Convert categorical to dummies
 df_train = processor.one_hot_encode(df_train)
 df_test = processor.one_hot_encode(df_test)
@@ -84,35 +105,33 @@ start, we can use VarianceThreshold to remove features with low variance.
 '''
 # ## VarianceThreshold
 # ## For binary, Var[x] = p(1-p)
-# selector = VarianceThreshold(threshold=.8*(1-.8)) ## set threshold to 85%
+selector = VarianceThreshold(threshold=.8*(1-.8)) ## set threshold to 80%
 # ## Only interested in binary variables
 df = df_train.copy()
-# binary_columns = [col for col in df.columns if df[col].nunique() == 2]
-# binary = df[binary_columns]
-# #%%
-# ## Remove binary
-# df_train = df_train.drop(binary_columns, axis=1)
-# ## Fit selector
-# selector.fit(binary)
-# binary = binary[binary.columns[selector.get_support()]]
-# ## Create list of binary features to select from df_test
-# selected = binary.columns
+binary_columns = [col for col in df.columns if df[col].nunique() == 2]
+binary = df[binary_columns]
+#%%
+## Remove binary
+df_train = df_train.drop(binary_columns, axis=1)
+## Fit selector
+selector.fit(binary)
+binary = binary[binary.columns[selector.get_support()]]
+## Create list of binary features to select from df_test
+selected = binary.columns
 #%%
 ## For non-binary variables, we can use SelectKBest from Sklearn
-# selected = []
-# selector = SelectKBest(f_regression, k=150)
-# selector.fit(df_train, target)
-# temp_df = df_train[df_train.columns[selector.get_support()]]
-# numerics = temp_df.columns
-# # selected = selected.append(temp_df.columns)
-# selected = temp_df.columns.to_list()
-# ## Inlcude all dwelling types for modeling
-# # selected = selected.append(df.filter(regex='MSSubClass.*').columns)
-# # selected = list(set(selected))
-# #%%
-# ## Reduce dimensions
-# df_train = processor.select(df, selected)
-# df_test = processor.select(df_test, selected)
+selector = SelectKBest(f_regression, k=30)
+selector.fit(df_train, target)
+temp_df = df_train[df_train.columns[selector.get_support()]]
+numerics = temp_df.columns
+selected = selected.append(temp_df.columns)
+## Inlcude all dwelling types for modeling
+# selected = selected.append(df.filter(regex='MSSubClass.*').columns)
+# selected = list(set(selected))
+#%%
+## Reduce dimensions
+df_train = processor.select(df, selected)
+df_test = processor.select(df_test, selected)
 #%%
 ## Match columns
 for col in df_train.columns:
@@ -121,22 +140,22 @@ for col in df_train.columns:
 df_test = df_test.reindex(df_train.columns, axis=1)
 #%%
 ## Pairplot of the 15 best variables to see their distributions.
-# pair = sns.pairplot(temp_df)
-# plt.title('Distributions of 15 best numeric variables')
-# plt.show()
-# pair.savefig('plots/pairplot.png')
+pair = sns.pairplot(temp_df)
+plt.title('Distributions of 15 best numeric variables')
+plt.show()
+pair.savefig('plots/pairplot.png')
 
 #%%
 '''
-Looks like most of the variables are normally distribute but some have skewed
+Looks like most of the variables are normally distributed but some have skewed
 distributions.  We will normalize these features with a MinMaxScaler since
 they have lots of zeroes.
 '''
 scaler = MinMaxScaler()
-# df_train[numerics] = scaler.fit_transform(df_train[numerics])
-# df_test[numerics] = scaler.fit_transform(df_test[numerics])
-df_train = scaler.fit_transform(df_train)
-df_test = scaler.fit_transform(df_test)
+df_train[numerics] = scaler.fit_transform(df_train[numerics])
+df_test[numerics] = scaler.fit_transform(df_test[numerics])
+# df_train = scaler.fit_transform(df_train)
+# df_test = scaler.fit_transform(df_test)
 #%%
 ## Train test spliit
 X_train, X_test, y_train, y_test = train_test_split(df_train, target,
@@ -171,18 +190,18 @@ dmat_test = xgb.DMatrix(X_test, label=y_test)
 
 xgbr = xgb.XGBRFRegressor()
 params = {
-    'objective' : 'reg:squarederror',
-    'max_depth' : 40,
+    'objective' : ['reg:squarederror'],
+    'max_depth' : [40,60],
     'eta' : 0.03,
-    'min_child_weight' : 2,
-    'n_estimators' : 600
+    'min_child_weight' : [2,4],
+    'n_estimators' : [600,800]
     }
-# xgbr_grid = GridSearchCV(xgbr, params, cv=5, n_jobs=-1, verbose=2)
-# xgbr_grid.fit(X_train, y_train)
+xgbr_grid = GridSearchCV(xgbr, params, cv=5, n_jobs=-1, verbose=2)
+xgbr_grid.fit(X_train, y_train)
 #%%
 ## Pull best parameters for new model
-# best_params = xgbr_grid.best_params_
-model = xgb.train(params,
+best_params = xgbr_grid.best_params_
+model = xgb.train(best_params,
                   dmat_train,
                   num_boost_round = 500,
                   early_stopping_rounds=20,
@@ -204,3 +223,6 @@ predictions = np.expm1(predictions)
 ## Create submission dataframe
 submission = pd.DataFrame.from_dict({'Id':test_ids, 'SalePrice':predictions})
 submission.to_csv('submission.csv', index=False)
+#%%
+print(np.expm1(mse))
+print(np.expm1(mse**(1/2.0)))

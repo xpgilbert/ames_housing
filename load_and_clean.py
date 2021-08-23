@@ -3,12 +3,12 @@
 """
 Created on Thu Jul 22 10:09:33 2021
 
-@author: Gilly
+@author: xpgilbert
+
+ Load and Clean Data
+
+ Ames, Iowa Housing Dataset
 """
-
-# Load and Clean Data
-## Ames, Iowa Housing Dataset
-
 ## Imports
 ## Linear Algebra, Data Science
 import pandas as pd
@@ -69,8 +69,12 @@ assert df_test.isnull().sum().max() == 0, 'Test set still has missing values'
 ## MSSubClass is categorical.
 df_train['MSSubClass'] = df_train['MSSubClass'].apply(str)
 assert df_train['MSSubClass'].dtype != 'int', 'MSSubClass is numeric'
+# #%%
+# ## MiscFeature is too unpredictable, includes stuff like TennisCourt or other
+# to_drop = ['MiscFeature']
+# df_train = df_train.drop(to_drop, axis=1)
+# df_test = df_test.drop(to_drop, axis=1)
 #%%
 df_train.to_csv('data/df_train.csv', index=False)
 df_test.to_csv('data/df_test.csv', index=False)
 pd.DataFrame(target).to_csv('data/target.csv', index=False)
-

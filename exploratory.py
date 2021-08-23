@@ -3,7 +3,7 @@
 """
 Created on Tue Jul 20 18:40:08 2021
 
-@author: Gilly
+@author: xpgilbert
 """
 # Exploratory Data Analysis
 ## Ames, Iowa Housing Dataset
@@ -16,8 +16,9 @@ import pandas as pd
 ## Visualizations
 import matplotlib.pyplot as plt
 import seaborn as sns
-##Use whitegrid in seaborn
+## Use whitegrid in seaborn
 sns.set_style('whitegrid')
+## Increase plot resolution when saving
 sns.set(rc={"figure.dpi":300, 'savefig.dpi':300})
 #%%
 ## Read and ready data
@@ -274,7 +275,7 @@ bsmt_sq_s = sns.jointplot(x='TotalBsmtSF', y='SalePrice', data=train)
 plt.title('Basement Square Footage vs \n SalePrice')
 plt.show()
 '''
-Again we have an outlier here from our exploratory analysis.  There is a 
+Again we have an outlier here from our exploratory analysis.  There is a
 basement over 6000sq ft in size and sold less than 200000.  Lets remove this
 as it will impact our scaler later.
 '''
@@ -291,7 +292,7 @@ plt.title('Missing value columns')
 plt.show()
 '''
 Looks like were missing quite a bit of information about the alley and pools.
-From the data dictionary, we see that sometimes, missing values represent the
+From the data dictionary, we see that sometimes missing values represent the
 class None. We can see this in the missing values for the basement related
 features.  They all line up since the nan here actually represents that the
 sale has no basement.
