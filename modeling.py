@@ -24,6 +24,7 @@ from sklearn.feature_selection import f_regression
 ## Scaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import RobustScaler
 ## Custome PreProcessing
 from functions import Process
 ## Train-test-split, KFold
@@ -37,7 +38,8 @@ from sklearn.metrics import mean_squared_error
 import xgboost as xgb
 ## OLS
 import statsmodels.api as sm
-
+## Lasso, Ridge
+from sklearn.linear_model import LassoCV, RidgeCV
 ## Set constants
 random_state = 42
 #%%
@@ -96,6 +98,10 @@ for col in cols:
 for col in cols:
     df_test = processor.mean_encode_new(df_test, col)
 df_train = df_train.drop('target', axis=1)
+#%%
+## We have a nan value in the test set since it didnt have any values in the
+## training set, we will the mean of all values
+df_test['MSSubClass'] = df_test['MSSubClass'].fillna(df_test['MSSubClass'].mean())
 #%%
 ## Convert categorical to dummies
 df_train = processor.one_hot_encode(df_train)
@@ -217,17 +223,42 @@ mse = mean_squared_error(y_test, xgb_pred)
 print("MSE: %.2f" % mse)
 print("RMSE: %.2f" % (mse**(1/2.0)))
 #%%
-## Modeling using OLS
-ols = sm.OLS(y_train, X_train)
-results = ols.fit()
-ols_pred = results.predict(X_test)
-mse = mean_squared_error(y_test, ols_pred)
+alphas_r = [1.0, 5.0, 10.0]
+alphas_l = [5e-05, 1e-05, 1e-03, 5e-03, 8e-03]
+## Modeling with Ridge
+ridge = RidgeCV(alphas = alphas_r, cv=kfold)
+## Modeling with Lasso
+lasso = LassoCV(alphas=alphas_l, random_state=random_state, cv=kfold, max_iter=1e7)
+## Reinstantiate XGBoost with searched parameters
+xgbr= xgb.XGBRFRegressor()
+xgbr.set_params(**best_params)
+# Store models and scores
+models = {'Ridge': ridge,
+          'Lasso': lasso,
+          'XGBoost': xgbr
+          }
+predictions = {}
+scores = {}
+
+for name, model in models.items():
+    
+    model.fit(X_train, y_train)
+    predictions[name] = np.expm1(model.predict(X_test))
+    kf_cv_scores = cross_val_score(model, X_train, y_train, cv=kfold)
+    score = np.sqrt(kf_cv_scores)
+    scores[name] = (score.mean(), score.std())
+#%%
+## Create ensembler with models to generate predictions
+def ensembler(X):
+    pred = (ridge.predict(X) + lasso.predict(X) + xgbr.predict(X))/3.0
+    return pred
+ensemble_preds = ensembler(X_test)
+mse = mean_squared_error(y_test, ensemble_preds)
 print("MSE: %.2f" % mse)
 print("RMSE: %.2f" % (mse**(1/2.0)))
 #%%
-## Generate predictions based on test set with XGBoost
-dtest = xgb.DMatrix(df_test)
-predictions = model.predict(dtest)
+## Generate predictions based on test set with ensembler
+predictions = ensembler(df_test)
 ## Return to non-normalized scale
 predictions = np.expm1(predictions)
 ## Create submission dataframe
