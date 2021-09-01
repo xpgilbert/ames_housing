@@ -9,7 +9,9 @@
 
 ## Introduction
 This is a real estate pricing estimator for Ames, Iowa based
-on the Ames Housing dataset from [here](https://www.google.com). We will detail the exploratory analysis that influenced our feature engineering, model selection, and hyperparameter tuning.  This dataset is also part of a [kaggle competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) and our submission placed in the top 60% of submissions with a
+on the Ames Housing dataset from [here](https://www.google.com). The dataset is distinctly rich and offers a fun, unique data science exercise.  We have access to a wide variety of numerical features, such as the square footage of the finishes basement vs. the total basement square footage, and the data includes categorical features with many relevant classes, such as the type of real-estate feature with over ten classes.  The exercise here is to find train a model that generalizes well despite the richness of our training set.  I am also interested in using this exercise to create a blueprint for future housing price estimators.  As someone who lives in Denver, a housing market that has been off the rails in the last ten years, a local estimator would be a great future project that I can build based on the experience below.
+
+We will detail the exploratory analysis that influenced our feature engineering, model selection, and hyperparameter tuning.  This dataset is also part of a [kaggle competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) and our submission placed in the top 60% of submissions with a
 score of 0.15.  On our validation set for which I detail below,
 we scored an MAE of 0.01.  
 
