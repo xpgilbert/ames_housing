@@ -24,3 +24,9 @@ All tools specific for this project are built specifically to easily prepare dat
 Our exploratory analysis includes various visualizations, such as box plots and heatmaps.  Some of these plots revealed both outliers in our data and some expected trends, such as a larger basement led to a higher sale price.  Feature engineering techniques included mean value encoding for categorical variables and mode imputing for missing values since many are categorical.  Mean value was used for missing values in the numeric features.  
 
 ## Exploratory Data Analysis
+
+To begin, lets explore the shape and size of the data set.  
+
+After some basic exploration of the dataset, our analysis begins with visualizations.  
+
+We first want to see the distribution of SalePrice across the different types of sale classes.  We see below that the 
